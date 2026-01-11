@@ -65,16 +65,6 @@ public class UserController  {
         userService.updateUser(userModel,id);
     }
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String,String>> handleValidationErros(MethodArgumentNotValidException exception){
-        var errors=new HashMap<String,String>();
-        exception.getBindingResult().getFieldErrors().forEach(error->{
 
-            errors.put(error.getField(),error.getDefaultMessage());
-        });
-
-return  ResponseEntity.badRequest().body(errors);
-
-    }
 
 }
