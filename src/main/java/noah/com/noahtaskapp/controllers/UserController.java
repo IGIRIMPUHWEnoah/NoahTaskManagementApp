@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import noah.com.noahtaskapp.dtos.RegisterUserRequest;
 import noah.com.noahtaskapp.dtos.UserDtos;
 import noah.com.noahtaskapp.models.UserModel;
+import noah.com.noahtaskapp.repositories.UserRepository;
 import noah.com.noahtaskapp.services.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -18,20 +19,25 @@ import java.util.Map;
 public class UserController  {
 
 
+    private final UserRepository userRepository;
     private   UserService userService;
-    UserController(UserService userService){
+    UserController(UserService userService, UserRepository userRepository){
         this.userService=userService;
+        this.userRepository = userRepository;
     }
 
     @PostMapping("/users")
-    public void createUser( @Valid @RequestBody RegisterUserRequest registerUserRequest){
+    public ResponseEntity<?> RegisterUser( @Valid @RequestBody RegisterUserRequest registerUserRequest){
 
         UserModel user=new UserModel();
         user.setUsername(registerUserRequest.getUsername());
         user.setEmail(registerUserRequest.getEmail());
         user.setPassword(registerUserRequest.getPassword());
 
+      if(userRepository.existsByEmail(user.getEmail())) return ResponseEntity.badRequest().body(Map.of("email","Email is already registered."));
+
         userService.createUser(user);
+        return ResponseEntity.ok(user);
     }
 
 
