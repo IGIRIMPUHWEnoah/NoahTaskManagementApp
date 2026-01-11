@@ -1,5 +1,6 @@
 package noah.com.noahtaskapp.controllers;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import noah.com.noahtaskapp.dtos.RegisterUserRequest;
 import noah.com.noahtaskapp.dtos.UserDtos;
@@ -7,6 +8,7 @@ import noah.com.noahtaskapp.models.UserModel;
 import noah.com.noahtaskapp.repositories.UserRepository;
 import noah.com.noahtaskapp.services.UserService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,16 +17,20 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
+@Tag(name="User")
 
 public class UserController  {
 
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
     private   UserService userService;
-    UserController(UserService userService, UserRepository userRepository){
+    UserController(UserService userService, UserRepository userRepository,PasswordEncoder passwordEncoder){
         this.userService=userService;
         this.userRepository = userRepository;
+        this.passwordEncoder=passwordEncoder;
     }
+
 
     @PostMapping("/users")
     public ResponseEntity<?> RegisterUser( @Valid @RequestBody RegisterUserRequest registerUserRequest){
@@ -32,7 +38,7 @@ public class UserController  {
         UserModel user=new UserModel();
         user.setUsername(registerUserRequest.getUsername());
         user.setEmail(registerUserRequest.getEmail());
-        user.setPassword(registerUserRequest.getPassword());
+        user.setPassword(passwordEncoder.encode(registerUserRequest.getPassword()));
 
       if(userRepository.existsByEmail(user.getEmail())) return ResponseEntity.badRequest().body(Map.of("email","Email is already registered."));
 
