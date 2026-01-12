@@ -1,5 +1,6 @@
 package noah.com.noahtaskapp.services;
 
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,4 +18,18 @@ public class JwtService {
  return        Jwts.builder().setSubject(email).issuedAt(new Date()).expiration(new Date(System.currentTimeMillis()+1000*60*60*10)).signWith(Keys.hmacShaKeyFor(secrete.getBytes())).compact();
 
     }
+
+    public boolean validateToken(String token){
+
+        try {
+            var claims = Jwts.parser().verifyWith(Keys.hmacShaKeyFor(secrete.getBytes())).build().parseSignedClaims(token).getPayload();
+
+            return  claims.getExpiration().after(new Date());
+        }catch (JwtException e){
+
+            return false;
+
+        }
+    }
+
 }

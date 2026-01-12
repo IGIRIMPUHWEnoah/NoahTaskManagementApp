@@ -50,7 +50,7 @@ return config.getAuthenticationManager();
             .authorizeHttpRequests(c->
 
                     c.requestMatchers(HttpMethod.POST,"/users").permitAll().
-                            requestMatchers(HttpMethod.POST,"/auth/login").permitAll().anyRequest().authenticated());
+                            requestMatchers(HttpMethod.POST,"/auth/login").permitAll().requestMatchers(HttpMethod.POST,"/auth/validate").permitAll().anyRequest().authenticated());
       return http.build();
 
     }
