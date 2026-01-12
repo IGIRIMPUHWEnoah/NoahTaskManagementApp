@@ -3,31 +3,35 @@ package noah.com.noahtaskapp.controllers;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import noah.com.noahtaskapp.dtos.LoginUserRequest;
+import noah.com.noahtaskapp.dtos.TokenResponse;
 import noah.com.noahtaskapp.repositories.UserRepository;
+import noah.com.noahtaskapp.services.JwtService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
 @AllArgsConstructor
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
 
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
+    private final AuthenticationManager authenticationManager;
+    private final JwtService jwtService;
 
     @PostMapping("/login")
-    public ResponseEntity<Void> login(@Valid @RequestBody LoginUserRequest loginUserRequest){
-var user=userRepository.findByEmail(loginUserRequest.getEmail()).orElse(null);
+    public ResponseEntity<TokenResponse> login(@Valid @RequestBody LoginUserRequest loginUserRequest){
+authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginUserRequest.getEmail(),loginUserRequest.getPassword()));
 
-if(user==null) return  ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+String token= jwtService.generateToken(loginUserRequest.getEmail());
+return ResponseEntity.ok(new TokenResponse(token));
+    }
 
-      if (!passwordEncoder.matches(loginUserRequest.getPassword(),user.getPassword())){
-         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-return ResponseEntity.ok().build();
+    @ExceptionHandler(BadCredentialsException.class)
+    public  ResponseEntity<Void> handleBadCredentialsException(){
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
 }
