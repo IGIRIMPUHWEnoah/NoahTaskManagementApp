@@ -1,5 +1,6 @@
 package noah.com.noahtaskapp.services;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -22,7 +23,7 @@ public class JwtService {
     public boolean validateToken(String token){
 
         try {
-            var claims = Jwts.parser().verifyWith(Keys.hmacShaKeyFor(secrete.getBytes())).build().parseSignedClaims(token).getPayload();
+            var claims = getClaims(token);
 
             return  claims.getExpiration().after(new Date());
         }catch (JwtException e){
@@ -31,5 +32,16 @@ public class JwtService {
 
         }
     }
+
+
+    public Claims getClaims(String token){
+    return    Jwts.parser().verifyWith(Keys.hmacShaKeyFor(secrete.getBytes())).build().parseSignedClaims(token).getPayload();
+
+    }
+
+public String getEmailFromToken(String token){
+
+       return getClaims(token).getSubject();
+}
 
 }

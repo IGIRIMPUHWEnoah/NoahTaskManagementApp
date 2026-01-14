@@ -1,6 +1,7 @@
 package noah.com.noahtaskapp.config;
 
 import lombok.AllArgsConstructor;
+import noah.com.noahtaskapp.filter.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -15,12 +16,15 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
 @AllArgsConstructor
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
     private final UserDetailsService userDetailsService;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
 @Bean
     public AuthenticationProvider authenticationProvider(){
         var provider=new DaoAuthenticationProvider(userDetailsService);
@@ -50,7 +54,8 @@ return config.getAuthenticationManager();
             .authorizeHttpRequests(c->
 
                     c.requestMatchers(HttpMethod.POST,"/users").permitAll().
-                            requestMatchers(HttpMethod.POST,"/auth/login").permitAll().requestMatchers(HttpMethod.POST,"/auth/validate").permitAll().anyRequest().authenticated());
+                            requestMatchers(HttpMethod.POST,"/auth/login").permitAll().requestMatchers(HttpMethod.POST,"/auth/validate").permitAll().anyRequest().authenticated())
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
       return http.build();
 
     }
